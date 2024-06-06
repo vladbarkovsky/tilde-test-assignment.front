@@ -1,0 +1,24 @@
+<h2 class="fs-5 mb-3">Biggest debtor/creditor</h2>
+
+@if (biggestDebtorCreditor) {
+  <div class="card">
+    <div class="card-header fw-bold">
+      {{ biggestDebtorCreditor.firstName }}
+      {{ biggestDebtorCreditor.lastName }}
+    </div>
+
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item">
+        <span class="fw-bold">Total debt:</span>
+        {{ biggestDebtorCreditor.totalDebt | currency: 'EUR' : 'symbol' }}
+      </li>
+
+      <li class="list-group-item">
+        <span class="fw-bold">Total credit:</span>
+        {{ biggestDebtorCreditor.totalCredit | currency: 'EUR' : 'symbol' }}
+      </li>
+    </ul>
+  </div>
+} @else {
+  <span class="col">Loading...</span>
+}

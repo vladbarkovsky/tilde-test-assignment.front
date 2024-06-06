@@ -16,9 +16,9 @@ import { HttpClient, HttpHeaders, HttpResponse, HttpResponseBase } from '@angula
 export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL');
 
 export interface IStatisticsClient {
-    getBalanceStatuses(): Observable<BalanceStatusVM[]>;
+    getBalanceStatuses(query: GetBalanceStatusesQuery): Observable<BalanceStatusVM[]>;
     getBiggestDebtorCreditor(): Observable<BiggestDebtorCreditorVM>;
-    getAverageDebts(): Observable<AverageDebtVM[]>;
+    getAverageDebts(query: GetAverageDebtsQuery): Observable<AverageDebtVM[]>;
     getBestDebtor(): Observable<BestDebtorVM>;
 }
 
@@ -35,19 +35,23 @@ export class StatisticsClient implements IStatisticsClient {
         this.baseUrl = baseUrl ?? "";
     }
 
-    getBalanceStatuses(): Observable<BalanceStatusVM[]> {
+    getBalanceStatuses(query: GetBalanceStatusesQuery): Observable<BalanceStatusVM[]> {
         let url_ = this.baseUrl + "/api/Statistics/GetBalanceStatuses";
         url_ = url_.replace(/[?&]$/, "");
 
+        const content_ = JSON.stringify(query);
+
         let options_ : any = {
+            body: content_,
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
+                "Content-Type": "application/json",
                 "Accept": "application/json"
             })
         };
 
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
             return this.processGetBalanceStatuses(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
@@ -138,19 +142,23 @@ export class StatisticsClient implements IStatisticsClient {
         return _observableOf(null as any);
     }
 
-    getAverageDebts(): Observable<AverageDebtVM[]> {
+    getAverageDebts(query: GetAverageDebtsQuery): Observable<AverageDebtVM[]> {
         let url_ = this.baseUrl + "/api/Statistics/GetAverageDebts";
         url_ = url_.replace(/[?&]$/, "");
 
+        const content_ = JSON.stringify(query);
+
         let options_ : any = {
+            body: content_,
             observe: "response",
             responseType: "blob",
             headers: new HttpHeaders({
+                "Content-Type": "application/json",
                 "Accept": "application/json"
             })
         };
 
-        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
             return this.processGetAverageDebts(response_);
         })).pipe(_observableCatch((response_: any) => {
             if (response_ instanceof HttpResponseBase) {
@@ -246,7 +254,7 @@ export class BalanceStatusVM implements IBalanceStatusVM {
     personId!: string;
     firstName!: string;
     lastName!: string;
-    balanceStatus!: BalanceStatus;
+    status!: BalanceStatus;
 
     constructor(data?: IBalanceStatusVM) {
         if (data) {
@@ -262,7 +270,7 @@ export class BalanceStatusVM implements IBalanceStatusVM {
             this.personId = _data["personId"];
             this.firstName = _data["firstName"];
             this.lastName = _data["lastName"];
-            this.balanceStatus = _data["balanceStatus"];
+            this.status = _data["status"];
         }
     }
 
@@ -278,7 +286,7 @@ export class BalanceStatusVM implements IBalanceStatusVM {
         data["personId"] = this.personId;
         data["firstName"] = this.firstName;
         data["lastName"] = this.lastName;
-        data["balanceStatus"] = this.balanceStatus;
+        data["status"] = this.status;
         return data;
     }
 }
@@ -287,13 +295,62 @@ export interface IBalanceStatusVM {
     personId: string;
     firstName: string;
     lastName: string;
-    balanceStatus: BalanceStatus;
+    status: BalanceStatus;
 }
 
 export enum BalanceStatus {
     Negative = 0,
     Neutral = 1,
     Positive = 2,
+}
+
+export class GetBalanceStatusesQuery implements IGetBalanceStatusesQuery {
+    sortBy!: string | undefined;
+    sortDirection!: SortDirection | undefined;
+    searchText!: string | undefined;
+
+    constructor(data?: IGetBalanceStatusesQuery) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.sortBy = _data["sortBy"];
+            this.sortDirection = _data["sortDirection"];
+            this.searchText = _data["searchText"];
+        }
+    }
+
+    static fromJS(data: any): GetBalanceStatusesQuery {
+        data = typeof data === 'object' ? data : {};
+        let result = new GetBalanceStatusesQuery();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["sortBy"] = this.sortBy;
+        data["sortDirection"] = this.sortDirection;
+        data["searchText"] = this.searchText;
+        return data;
+    }
+}
+
+export interface IGetBalanceStatusesQuery {
+    sortBy: string | undefined;
+    sortDirection: SortDirection | undefined;
+    searchText: string | undefined;
+}
+
+export enum SortDirection {
+    Ascending = 0,
+    Descending = 1,
 }
 
 export class BiggestDebtorCreditorVM implements IBiggestDebtorCreditorVM {
@@ -352,7 +409,7 @@ export class AverageDebtVM implements IAverageDebtVM {
     personId!: string;
     firstName!: string;
     lastName!: string;
-    averageDebt!: number;
+    debt!: number;
 
     constructor(data?: IAverageDebtVM) {
         if (data) {
@@ -368,7 +425,7 @@ export class AverageDebtVM implements IAverageDebtVM {
             this.personId = _data["personId"];
             this.firstName = _data["firstName"];
             this.lastName = _data["lastName"];
-            this.averageDebt = _data["averageDebt"];
+            this.debt = _data["debt"];
         }
     }
 
@@ -384,7 +441,7 @@ export class AverageDebtVM implements IAverageDebtVM {
         data["personId"] = this.personId;
         data["firstName"] = this.firstName;
         data["lastName"] = this.lastName;
-        data["averageDebt"] = this.averageDebt;
+        data["debt"] = this.debt;
         return data;
     }
 }
@@ -393,7 +450,51 @@ export interface IAverageDebtVM {
     personId: string;
     firstName: string;
     lastName: string;
-    averageDebt: number;
+    debt: number;
+}
+
+export class GetAverageDebtsQuery implements IGetAverageDebtsQuery {
+    sortBy!: string | undefined;
+    sortDirection!: SortDirection | undefined;
+    searchText!: string | undefined;
+
+    constructor(data?: IGetAverageDebtsQuery) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.sortBy = _data["sortBy"];
+            this.sortDirection = _data["sortDirection"];
+            this.searchText = _data["searchText"];
+        }
+    }
+
+    static fromJS(data: any): GetAverageDebtsQuery {
+        data = typeof data === 'object' ? data : {};
+        let result = new GetAverageDebtsQuery();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["sortBy"] = this.sortBy;
+        data["sortDirection"] = this.sortDirection;
+        data["searchText"] = this.searchText;
+        return data;
+    }
+}
+
+export interface IGetAverageDebtsQuery {
+    sortBy: string | undefined;
+    sortDirection: SortDirection | undefined;
+    searchText: string | undefined;
 }
 
 export class BestDebtorVM implements IBestDebtorVM {

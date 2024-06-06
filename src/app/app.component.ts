@@ -1,13 +1,14 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, RouterLink } from '@angular/router';
+import { NgbCollapse, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
-  imports: [RouterOutlet],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
+  standalone: true,
+  imports: [RouterOutlet, RouterLink, NgbCollapse, NgbDropdownModule],
 })
 export class AppComponent {
-  title = 'tilde-test-assignment';
+  navbarCollapsed: boolean = true;
 }
